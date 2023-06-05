@@ -14,7 +14,7 @@ fn parse_value(val: &str) -> Kind {
         Ok(v) => Kind::Num(v),
         Err(_) => {
             let caps = re.captures(val).expect("Match failed");
-            return Kind::Range((caps["init"].parse().unwrap(), caps["fin"].parse().unwrap()));
+            Kind::Range((caps["init"].parse().unwrap(), caps["fin"].parse().unwrap()))
         }
     }
 }
