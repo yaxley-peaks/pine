@@ -13,5 +13,6 @@ fn main() {
     let _z = read_file_into_lines(args.o_file);
     let step1 = mark_lines(_x, _y);
     let step2 = build_final_result(step1, _z);
-    println!("{step2:#?}");
+    let step2 = step2.join("\n");
+    println!("{step2}");
 }
