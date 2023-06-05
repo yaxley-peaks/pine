@@ -1,5 +1,6 @@
 use std::process::exit;
 
+use lazy_static::lazy_static;
 use regex::Regex;
 
 #[derive(Debug)]
@@ -10,16 +11,18 @@ pub enum Kind {
 
 fn parse_value(val: &str) -> Kind {
     let parse_try = val.parse::<u32>();
-    let re = Regex::new(r"(?P<init>\d+)-(?P<fin>\d+)").unwrap();
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(?P<init>\d+)-(?P<fin>\d+)").unwrap();
+    }
     // Move to regex based parsing
     match parse_try {
         Ok(v) => Kind::Num(v),
         Err(_) => {
-            if !re.is_match(val) {
+            if !RE.is_match(val) {
                 eprintln!("The line format is incorrectly specified: {}", val);
                 exit(1);
             }
-            let caps = re.captures(val).expect("Match failed");
+            let caps = RE.captures(val).expect("Match failed");
             Kind::Range((caps["init"].parse().unwrap(), caps["fin"].parse().unwrap()))
         }
     }
