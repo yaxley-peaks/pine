@@ -2,9 +2,9 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 pub struct Args {
     #[arg(short)]
-    i_file: String,
+    pub i_file: String,
     #[arg(short)]
-    lines: Vec<String>,
+    pub lines: Vec<String>,
     #[arg(short)]
-    o_file: String,
+    pub o_file: String,
 }
