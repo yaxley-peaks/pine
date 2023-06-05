@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use regex::Regex;
 
 #[derive(Debug)]
@@ -13,6 +15,10 @@ fn parse_value(val: &str) -> Kind {
     match parse_try {
         Ok(v) => Kind::Num(v),
         Err(_) => {
+            if !re.is_match(val) {
+                eprintln!("The line format is incorrectly specified: {}", val);
+                exit(1);
+            }
             let caps = re.captures(val).expect("Match failed");
             Kind::Range((caps["init"].parse().unwrap(), caps["fin"].parse().unwrap()))
         }
