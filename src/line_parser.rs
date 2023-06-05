@@ -10,10 +10,11 @@ pub enum LineKind {
 }
 
 impl LineKind {
+    /// Is inclusive
     pub fn contains(&self, other: u32) -> bool {
         match self {
             LineKind::Num(x) => *x == other,
-            LineKind::Range((x, y)) => (*x..*y).contains(&other),
+            LineKind::Range((x, y)) => (*x..=*y).contains(&other),
         }
     }
 }
@@ -78,5 +79,25 @@ mod tests {
             panic!()
         });
         assert_eq!(val, Some(1))
+    }
+
+    #[test]
+    fn test_contains_num() {
+        assert!(LineKind::Num(4).contains(4));
+    }
+
+    #[test]
+    fn test_contains_range() {
+        assert!(LineKind::Range((1, 10)).contains(4));
+    }
+
+    #[test]
+    fn test_contains_rangeu() {
+        assert!(LineKind::Range((1, 10)).contains(10));
+    }
+
+    #[test]
+    fn test_contains_rangel() {
+        assert!(LineKind::Range((1, 10)).contains(1));
     }
 }
