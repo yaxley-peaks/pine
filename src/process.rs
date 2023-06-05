@@ -8,7 +8,6 @@ enum Marker {
 
 #[derive(Debug)]
 pub struct MarkedLine {
-    index: u32,
     marker: Marker,
     line: String,
 }
@@ -22,13 +21,11 @@ pub fn mark_lines(kinds: Vec<LineKind>, lines: Vec<String>) -> Vec<MarkedLine> {
         let i = i.try_into().unwrap();
         if ranges_contain(&kinds, i) {
             res.push(MarkedLine {
-                index: i,
                 marker: Marker::Keep,
                 line: l.to_string(),
             });
         } else {
             res.push(MarkedLine {
-                index: i,
                 marker: Marker::Dont,
                 line: l.to_string(),
             });
