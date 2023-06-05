@@ -18,7 +18,7 @@ impl LineKind {
     }
 }
 
-fn parse_value(val: &str) -> LineKind {
+fn _parse_value<F: FnOnce(i32)>(val: &str, f: F) -> LineKind {
     let parse_try = val.parse::<u32>();
     lazy_static! {
         static ref RE: Regex = Regex::new(r"(?P<init>\d+)-(?P<fin>\d+)").unwrap();
@@ -28,12 +28,16 @@ fn parse_value(val: &str) -> LineKind {
         Err(_) => {
             if !RE.is_match(val) {
                 eprintln!("The line format is incorrectly specified: {}", val);
-                exit(1);
+                f(1);
             }
             let caps = RE.captures(val).expect("Match failed");
             LineKind::Range((caps["init"].parse().unwrap(), caps["fin"].parse().unwrap()))
         }
     }
+}
+
+fn parse_value(val: &str) -> LineKind {
+    _parse_value(val, |n| exit(n))
 }
 
 pub fn parse_line_ranges(vals: Vec<String>) -> Vec<LineKind> {
@@ -52,5 +56,27 @@ mod tests {
     #[test]
     fn test_parse_value_with_range() {
         assert_eq!(parse_value("10-20"), LineKind::Range((10, 20)));
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_wrong_parse() {
+        let mut val = None;
+        _parse_value("10-a", |x| {
+            val = Some(x);
+            panic!()
+        });
+        assert_eq!(val, Some(1))
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_wrong_parse2() {
+        let mut val = None;
+        _parse_value("aa", |x| {
+            val = Some(x);
+            panic!()
+        });
+        assert_eq!(val, Some(1))
     }
 }
