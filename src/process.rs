@@ -36,3 +36,14 @@ pub fn mark_lines(kinds: Vec<LineKind>, lines: Vec<String>) -> Vec<MarkedLine> {
     }
     res
 }
+
+pub fn build_final_result(existing: Vec<MarkedLine>, inc: Vec<String>) -> Vec<String> {
+    let mut res = Vec::new();
+    for (e, i) in existing.into_iter().zip(inc) {
+        match e.marker {
+            Marker::Keep => res.push(e.line.to_string()),
+            Marker::Dont => res.push(i.to_string()),
+        }
+    }
+    res
+}
