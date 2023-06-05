@@ -11,8 +11,8 @@ pub struct MarkedLine {
     marker: Marker,
     line: String,
 }
-fn ranges_contain(rngs: &Vec<LineKind>, other: u32) -> bool {
-    rngs.into_iter().any(|x| x.contains(other))
+fn ranges_contain(rngs: &[LineKind], other: u32) -> bool {
+    rngs.iter().any(|x| x.contains(other))
 }
 
 pub fn mark_lines(kinds: Vec<LineKind>, lines: Vec<String>) -> Vec<MarkedLine> {
