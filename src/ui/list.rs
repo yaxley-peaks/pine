@@ -8,9 +8,9 @@ use tui::{
 
 use super::skeleton::get_skeleton;
 
-struct LineItem {
-    items: Vec<String>,
-    state: ListState,
+pub struct LineItem {
+    pub items: Vec<String>,
+    pub state: ListState,
 }
 
 impl LineItem {

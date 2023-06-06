@@ -9,9 +9,22 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{io, thread};
-use tui::{backend::CrosstermBackend, Terminal};
-use ui::list::draw_lists;
+use std::{
+    borrow::BorrowMut,
+    fs, io,
+    sync::{Arc, Mutex},
+    thread,
+};
+use tui::{
+    backend::CrosstermBackend,
+    style::{Color, Style},
+    widgets::{List, ListItem},
+    Terminal,
+};
+use ui::{
+    list::{draw_lists, LineItem},
+    skeleton::get_skeleton,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     enable_raw_mode()?;
@@ -22,8 +35,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // ===============================
 
+    let lines = fs::read_to_string("other.txt")?
+        .lines()
+        .map(ToOwned::to_owned)
+        .collect();
+
+    let mut items = LineItem::new(lines);
+
     // draw calls
-    terminal.draw(draw_lists)?;
+    terminal.draw(|f| {
+        let (i, _) = get_skeleton(f);
+        let list_items: Vec<ListItem> = items
+            .items
+            .iter()
+            .map(|i| ListItem::new(i.as_ref()).style(Style::default().fg(Color::Blue)))
+            .collect();
+
+        let list = List::new(list_items).block(i.block);
+
+        f.render_stateful_widget(list, i.rect, &mut items.state);
+    })?;
 
     // ===============================
 
