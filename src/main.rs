@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(ToOwned::to_owned)
         .collect();
 
-    let items_mutex = std::sync::Arc::new(Mutex::new(LineItem::new(lines)));
+    let items_mutex = Arc::new(Mutex::new(LineItem::new(lines)));
 
     // draw calls
     let items = Arc::clone(&items_mutex);
@@ -49,22 +49,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .map(|x| ListItem::new(x.to_owned()).style(Style::default().fg(Color::Blue)))
             .collect();
         let (_i, _) = get_skeleton(f);
-        let list = List::new(line_items).block(_i.block);
+        let list = List::new(line_items)
+            .block(_i.block)
+            .highlight_symbol(">> ");
 
         f.render_stateful_widget(list, _i.rect, &mut items.lock().unwrap().state)
     })?;
 
     // ===============================
 
-    let event_thread = thread::spawn(|| loop {
-        if let Ok(Event::Key(KeyEvent {
-            code: KeyCode::Char('q'),
-            modifiers: _,
-            kind: KeyEventKind::Press,
-            state: _,
-        })) = event::read()
-        {
-            break;
+    let items = items_mutex.clone();
+    let event_thread = thread::spawn(move || {
+        let mut items = items.lock().unwrap();
+        loop {
+            match event::read().unwrap() {
+                Event::Key(KeyEvent {
+                    code: KeyCode::Char('q'),
+                    modifiers: _,
+                    kind: KeyEventKind::Press,
+                    state: _,
+                }) => break,
+                Event::Key(KeyEvent {
+                    code: KeyCode::Char('j'),
+                    modifiers: _,
+                    kind: KeyEventKind::Press,
+                    state: _,
+                }) => items.next(),
+                _ => {}
+            }
         }
     });
 
