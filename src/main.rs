@@ -10,7 +10,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::{
-    borrow::BorrowMut,
     fs, io,
     sync::{Arc, Mutex},
     thread,
@@ -21,10 +20,7 @@ use tui::{
     widgets::{List, ListItem},
     Terminal,
 };
-use ui::{
-    list::{draw_lists, LineItem},
-    skeleton::get_skeleton,
-};
+use ui::{list::LineItem, skeleton::get_skeleton};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     enable_raw_mode()?;
@@ -40,20 +36,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(ToOwned::to_owned)
         .collect();
 
-    let mut items = LineItem::new(lines);
+    let items_mutex = std::sync::Arc::new(Mutex::new(LineItem::new(lines)));
 
     // draw calls
-    terminal.draw(|f| {
-        let (i, _) = get_skeleton(f);
-        let list_items: Vec<ListItem> = items
+    let items = Arc::clone(&items_mutex);
+    terminal.draw(move |f| {
+        let line_items: Vec<ListItem> = items
+            .lock()
+            .unwrap()
             .items
             .iter()
-            .map(|i| ListItem::new(i.as_ref()).style(Style::default().fg(Color::Blue)))
+            .map(|x| ListItem::new(x.to_owned()).style(Style::default().fg(Color::Blue)))
             .collect();
+        let (_i, _) = get_skeleton(f);
+        let list = List::new(line_items).block(_i.block);
 
-        let list = List::new(list_items).block(i.block);
-
-        f.render_stateful_widget(list, i.rect, &mut items.state);
+        f.render_stateful_widget(list, _i.rect, &mut items.lock().unwrap().state)
     })?;
 
     // ===============================
@@ -70,7 +68,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    let _ = event_thread.join().unwrap();
+    event_thread.join().unwrap();
 
     disable_raw_mode()?;
     execute!(
