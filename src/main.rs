@@ -11,7 +11,7 @@ use crossterm::{
 };
 use std::{io, thread};
 use tui::{backend::CrosstermBackend, Terminal};
-use ui::skeleton::draw_skeleton;
+use ui::list::draw_lists;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     enable_raw_mode()?;
@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // ===============================
 
     // draw calls
-    terminal.draw(draw_skeleton)?;
+    terminal.draw(draw_lists)?;
 
     // ===============================
 
