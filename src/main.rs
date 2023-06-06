@@ -1,19 +1,19 @@
 pub mod line_parser;
 pub mod process;
+pub mod ui;
 
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture},
+    event::{
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyEventKind,
+    },
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{io, thread, time::Duration};
-use tui::{
-    backend::CrosstermBackend,
-    widgets::{Block, Borders},
-    Terminal,
-};
+use std::{io, thread};
+use tui::{backend::CrosstermBackend, Terminal};
+use ui::skeleton::draw_skeleton;
 
-fn main() -> Result<(), io::Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     enable_raw_mode()?;
     let mut stdout = io::stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
@@ -23,8 +23,23 @@ fn main() -> Result<(), io::Error> {
     // ===============================
 
     // draw calls
+    terminal.draw(draw_skeleton)?;
 
     // ===============================
+
+    let event_thread = thread::spawn(|| loop {
+        if let Ok(Event::Key(KeyEvent {
+            code: KeyCode::Char('q'),
+            modifiers: _,
+            kind: KeyEventKind::Press,
+            state: _,
+        })) = event::read()
+        {
+            break;
+        }
+    });
+
+    let _ = event_thread.join().unwrap();
 
     disable_raw_mode()?;
     execute!(
