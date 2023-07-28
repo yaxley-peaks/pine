@@ -25,7 +25,7 @@ fn _parse_value<F: FnOnce(i32)>(val: &str, f: F) -> LineKind {
         static ref RE: Regex = Regex::new(r"(?P<init>\d+)-(?P<fin>\d+)").unwrap();
     }
     match parse_try {
-        Ok(v) => LineKind::Num(v - 1),
+        Ok(v) => LineKind::Num(v),
         Err(_) => {
             if !RE.is_match(val) {
                 eprintln!("The line format is incorrectly specified: {}", val);
@@ -33,8 +33,8 @@ fn _parse_value<F: FnOnce(i32)>(val: &str, f: F) -> LineKind {
             }
             let caps = RE.captures(val).expect("Match failed");
             LineKind::Range((
-                caps["init"].parse::<u32>().unwrap() - 1,
-                caps["fin"].parse::<u32>().unwrap() - 1,
+                caps["init"].parse::<u32>().unwrap(),
+                caps["fin"].parse::<u32>().unwrap(),
             ))
         }
     }
